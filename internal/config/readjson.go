@@ -3,25 +3,33 @@ package config
 import (
 	"os"
 	"encoding/json"
+	"path/filepath"
 )
 
 const configFileName = ".gatorconfig.json"
 
-func Read() Config {
-	filePath := os.UserHomeDir
-	data, err := os.ReadFile(filePath+configFileName)
+func configPath() (string, error) {
+	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("Error reading the json File. Error:")
-		fmt.Printf(" - %v\n", err)
-		return Config{}
+		return "", err
+	}
+	return filepath.Join(home, configFileName), nil
+}
+
+func Read() (Config, error) {
+	path, err := configPath()
+	if err != nil {
+		return Config{}, err
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, err
 	}
 	c, err := unmarshal[Config](data)
 	if err != nil {
-		fmt.Println("Error unmarshaling the json File. Error:")
-		fmt.Printf(" - %v\n", err)
-		return Config{}
+		return Config{}, err
 	}
-	return c
+	return c, nil
 }
 
 func unmarshal[T any](b []byte) (T, error) {
