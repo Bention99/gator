@@ -2,35 +2,46 @@ package main
 
 import (
 	"fmt"
-	"bufio"
 	"os"
-	"strings"
 	"github.com/Bention99/gator/internal/config"
 )
 
 func main() {
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Printf("Please provide the command and 1 argument")
+		os.Exit(1)
+	}
+
 	c, err := config.Read()
 	if err != nil {
 		fmt.Println("Error reading File:")
 		fmt.Printf(" - %v\n", err)
+		os.Exit(1)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Please enter your Username: ")
-	input, _ := reader.ReadString('\n')
-
-	input = strings.TrimSpace(input)
-
-	c.DBURL = "postgres://example"
-	c.CurrentUserName = input
-
-	e := config.SetUser(c)
-	if e != nil {
-		fmt.Println("Error setting Username:")
-		fmt.Printf(" - %v\n", e)
+	s := &state{
+		cfg: &c,
 	}
 
-	fmt.Printf("Username set to: %v\n", input)
+	cs := commands{
+		cmds: make(map[string]func(*state, command) error),
+	}
+
+	name := args[1]
+	cmdArgs := args[2:]
+	
+	cmd := command{
+		name: name,
+		args: cmdArgs,
+	}
+
+	cs.register("login", handlerLogin)
+
+	if err := cs.run(s, cmd); err != nil {
+		fmt.Printf("%v\n", err)
+		os.Exit(1)
+	}
 
 	c2, err := config.Read()
 	fmt.Printf("DBURL: %v User: %v\n", c2.DBURL, c2.CurrentUserName)
