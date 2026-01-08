@@ -10,7 +10,7 @@ func handlerLogin(s *state, cmd command) error {
     if len(cmd.args) == 0 {
         return errors.New("login expects a single argument, the username")
     }
-    s.cfg.DBURL = "postgres://example"
+    // s.cfg.DBURL = "postgres://postgres:postgres@localhost:5432/gator?sslmode=disable"
 	s.cfg.CurrentUserName = cmd.args[0]
 
 	err := config.SetUser(*s.cfg)
