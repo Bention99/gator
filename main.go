@@ -16,12 +16,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	c, err := config.Read()
-	if err != nil {
-		fmt.Println("Error reading File:")
-		fmt.Printf(" - %v\n", err)
-		os.Exit(1)
-	}
+	cs := availableCommands()
+	
+	c := readConfig()
 
 	db, err := sql.Open("postgres", c.DBURL)
 	if err != nil {
@@ -36,10 +33,6 @@ func main() {
 		cfg: &c,
 	}
 
-	cs := commands{
-		cmds: make(map[string]func(*state, command) error),
-	}
-
 	name := args[1]
 	cmdArgs := args[2:]
 	
@@ -48,13 +41,30 @@ func main() {
 		args: cmdArgs,
 	}
 
-	cs.register("login", handlerLogin)
-
 	if err := cs.run(s, cmd); err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)
 	}
 
-	c2, err := config.Read()
-	fmt.Printf("DBURL: %v User: %v\n", c2.DBURL, c2.CurrentUserName)
+	c = readConfig()
+	fmt.Printf("DBURL: %v User: %v\n", c.DBURL, c.CurrentUserName)
+}
+
+func availableCommands() commands {
+	cs := commands{
+		cmds: make(map[string]func(*state, command) error),
+	}
+	cs.register("login", handlerLogin)
+	cs.register("register", handlerRegister)
+	return cs
+}
+
+func readConfig() config.Config {
+	c, err := config.Read()
+	if err != nil {
+		fmt.Println("Error reading File:")
+		fmt.Printf(" - %v\n", err)
+		os.Exit(1)
+	}
+	return c
 }
