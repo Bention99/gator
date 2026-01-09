@@ -1,12 +1,22 @@
 package main
 
 import (
+	"github.com/lib/pq"
 	"fmt"
 	"os"
 	"github.com/Bention99/gator/internal/config"
+	"github.com/Bention99/gator/internal/database"
 )
 
 func main() {
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		fmt.Printf("Error connecting to the DB: %v\n", err)
+		os.Exit(1)
+	}
+
+	dbQueries := database.New(db)
+	
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Printf("Please provide the command and 1 argument")
@@ -21,6 +31,7 @@ func main() {
 	}
 
 	s := &state{
+		db: &dbQueries,
 		cfg: &c,
 	}
 

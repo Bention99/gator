@@ -1,0 +1,4 @@
+/internal/database/
+/bin/
+/*.exe
+*.log
