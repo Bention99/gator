@@ -76,3 +76,29 @@ func handlerRegister(s *state, cmd command) error {
 	fmt.Printf("Name: %v\n", user.Name)
     return nil
 }
+
+func handlerReset(s *state, cmd command) error {
+	ctx := context.Background()
+	err := s.db.DeleteAllUsers(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Reset successful.")
+	return nil
+}
+
+func handlerGetAllUsers(s *state, cmd command) error {
+	ctx := context.Background()
+	users, err := s.db.GetAllUsers(ctx)
+	if err != nil {
+		return err
+	}
+	for _, user := range users {
+		if user == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", user)
+		} else {
+			fmt.Printf("* %v\n", user)
+		}
+	}
+	return nil
+}

@@ -46,8 +46,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	c = readConfig()
-	fmt.Printf("DBURL: %v User: %v\n", c.DBURL, c.CurrentUserName)
+	/*c = readConfig()
+	fmt.Printf("DBURL: %v User: %v\n", c.DBURL, c.CurrentUserName)*/
 }
 
 func availableCommands() commands {
@@ -56,6 +56,8 @@ func availableCommands() commands {
 	}
 	cs.register("login", handlerLogin)
 	cs.register("register", handlerRegister)
+	cs.register("reset", handlerReset)
+	cs.register("users", handlerGetAllUsers)
 	return cs
 }
 
