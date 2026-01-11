@@ -13,6 +13,13 @@ func main() {
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Printf("Please provide the command and 1 argument")
+		fmt.Println("Available commands:")
+		fmt.Println(" - c: login a: name")
+		fmt.Println(" - c: register a: name")
+		fmt.Println(" - c: reset a: -")
+		fmt.Println(" - c: users a: -")
+		fmt.Println(" - c: agg a: -")
+		fmt.Println(" - c: addfeed a: name url")
 		os.Exit(1)
 	}
 
@@ -58,6 +65,8 @@ func availableCommands() commands {
 	cs.register("register", handlerRegister)
 	cs.register("reset", handlerReset)
 	cs.register("users", handlerGetAllUsers)
+	cs.register("agg", handlerAggregate)
+	cs.register("addfeed", handlerAddFeed)
 	return cs
 }
 
