@@ -20,6 +20,7 @@ func main() {
 		fmt.Println(" - c: users a: -")
 		fmt.Println(" - c: agg a: -")
 		fmt.Println(" - c: addfeed a: name url")
+		fmt.Println(" - c: feeds a: -")
 		os.Exit(1)
 	}
 
@@ -67,6 +68,7 @@ func availableCommands() commands {
 	cs.register("users", handlerGetAllUsers)
 	cs.register("agg", handlerAggregate)
 	cs.register("addfeed", handlerAddFeed)
+	cs.register("feeds", handlerGetFeeds)
 	return cs
 }
 
