@@ -12,6 +12,18 @@ import (
 	"github.com/Bention99/gator/internal/rss"
 )
 
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+	return func(s *state, cmd command) error {
+		ctx := context.Background()
+		user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+		if err != nil {
+			return errors.New("No Account for that username.")
+		}
+		err = handler(s, cmd, user)
+		return err
+	}
+}
+
 func handlerLogin(s *state, cmd command) error {
     if len(cmd.args) == 0 {
         return errors.New("login expects a single argument, the username")
@@ -145,6 +157,20 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
+
+	cffp := database.CreateFeedFollowParams {
+		ID: uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		UserID: feed.UserID,
+		FeedID: feed.ID,
+	}
+
+	_, err = s.db.CreateFeedFollow(ctx, cffp)
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("Feed created\n")
 	fmt.Printf("ID: %v\n", feed.ID)
 	fmt.Printf("CreatedAt: %v\n", feed.CreatedAt)
@@ -199,5 +225,25 @@ func handlerFollow(s *state, cmd command) error {
 		return err
 	}
 	fmt.Printf("User: %s\nis now following Feed: %s\n", feedFollow.UserName, feedFollow.FeedName)
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	ctx := context.Background()
+	
+	currentUserName := s.cfg.CurrentUserName
+	currentUser, err := s.db.GetUser(ctx, currentUserName)
+	if err != nil {
+		return err
+	}
+
+	feedRows, err := s.db.GetFeedFollowsForUser(ctx, currentUser.Name)
+	if err != nil {
+		return err
+	}
+
+	for _, row := range feedRows {
+		fmt.Printf("Feed: %s\nUser: %s\n", row.FeedName, row.UserName)
+	}
 	return nil
 }

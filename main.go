@@ -22,6 +22,7 @@ func main() {
 		fmt.Println(" - c: addfeed a: name url")
 		fmt.Println(" - c: feeds a: -")
 		fmt.Println(" - c: follow a: url")
+		fmt.Println(" - c: following a: -")
 		os.Exit(1)
 	}
 
@@ -71,6 +72,7 @@ func availableCommands() commands {
 	cs.register("addfeed", handlerAddFeed)
 	cs.register("feeds", handlerGetFeeds)
 	cs.register("follow", handlerFollow)
+	cs.register("following", handlerFollowing)
 	return cs
 }
 
