@@ -162,7 +162,42 @@ func handlerGetFeeds(s *state, cmd command) error {
 		return err
 	}
 	for _, feed := range feeds {
-			fmt.Printf("Feed: %s\nURL: %s\nUser: %s\n\n", feed.Name, feed.Url, feed.CreatedBy)
+		fmt.Printf("Feed: %s\nURL: %s\nUser: %s\n\n", feed.Name, feed.Url, feed.CreatedBy)
 	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	ctx := context.Background()
+	
+	currentUserName := s.cfg.CurrentUserName
+	currentUser, err := s.db.GetUser(ctx, currentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.GetFeed(ctx, cmd.args[0])
+	if err != nil {
+		return err
+	}
+
+	now := sql.NullTime{
+		Time:  time.Now(),
+		Valid: true,
+	}
+
+	cffp := database.CreateFeedFollowParams {
+		ID: uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		UserID: currentUser.ID,
+		FeedID: feed.ID,
+	}
+
+	feedFollow, err := s.db.CreateFeedFollow(ctx, cffp)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("User: %s\nis now following Feed: %s\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
 }
