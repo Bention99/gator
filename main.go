@@ -23,6 +23,7 @@ func main() {
 		fmt.Println(" - c: feeds a: -")
 		fmt.Println(" - c: follow a: url")
 		fmt.Println(" - c: following a: -")
+		fmt.Println(" - c: unfollow a: url")
 		os.Exit(1)
 	}
 
@@ -73,6 +74,7 @@ func availableCommands() commands {
 	cs.register("feeds", handlerGetFeeds)
 	cs.register("follow", middlewareLoggedIn(handlerFollow))
 	cs.register("following", middlewareLoggedIn(handlerFollowing))
+	cs.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 	return cs
 }
 

@@ -225,8 +225,28 @@ func handlerFollowing(s *state, cmd command, currentUser database.User) error {
 		return err
 	}
 
+	if len(feedRows) == 0 {
+		fmt.Println("You are currently not following any feeds.")
+	}
+
 	for _, row := range feedRows {
 		fmt.Printf("Feed: %s\nUser: %s\n", row.FeedName, row.UserName)
 	}
+	return nil
+}
+
+func handlerUnfollow(s *state, cmd command, currentUser database.User) error {
+	ctx := context.Background()
+
+	ufp := database.UnfollowFeedParams {
+		Url: cmd.args[0],
+		Name: currentUser.Name,
+	}
+
+	err := s.db.UnfollowFeed(ctx, ufp)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("You unfollowed: %v\n", cmd.args[0])
 	return nil
 }
