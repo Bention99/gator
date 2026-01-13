@@ -131,13 +131,8 @@ func handlerAggregate(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, currentUser database.User) error {
 	ctx := context.Background()
-	currentUserName := s.cfg.CurrentUserName
-	currentUser, err := s.db.GetUser(ctx, currentUserName)
-	if err != nil {
-		return err
-	}
 
 	now := sql.NullTime{
 		Time:  time.Now(),
@@ -193,14 +188,8 @@ func handlerGetFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, currentUser database.User) error {
 	ctx := context.Background()
-	
-	currentUserName := s.cfg.CurrentUserName
-	currentUser, err := s.db.GetUser(ctx, currentUserName)
-	if err != nil {
-		return err
-	}
 
 	feed, err := s.db.GetFeed(ctx, cmd.args[0])
 	if err != nil {
@@ -228,14 +217,8 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, currentUser database.User) error {
 	ctx := context.Background()
-	
-	currentUserName := s.cfg.CurrentUserName
-	currentUser, err := s.db.GetUser(ctx, currentUserName)
-	if err != nil {
-		return err
-	}
 
 	feedRows, err := s.db.GetFeedFollowsForUser(ctx, currentUser.Name)
 	if err != nil {

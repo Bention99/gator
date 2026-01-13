@@ -69,10 +69,10 @@ func availableCommands() commands {
 	cs.register("reset", handlerReset)
 	cs.register("users", handlerGetAllUsers)
 	cs.register("agg", handlerAggregate)
-	cs.register("addfeed", handlerAddFeed)
+	cs.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	cs.register("feeds", handlerGetFeeds)
-	cs.register("follow", handlerFollow)
-	cs.register("following", handlerFollowing)
+	cs.register("follow", middlewareLoggedIn(handlerFollow))
+	cs.register("following", middlewareLoggedIn(handlerFollowing))
 	return cs
 }
 
