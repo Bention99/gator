@@ -117,8 +117,37 @@ func handlerGetAllUsers(s *state, cmd command) error {
 }
 
 func handlerAggregate(s *state, cmd command) error {
+	if len(cmd.args) == 0 {
+        return errors.New("agg expects a single argument: time_between_reqs, like: 1ms, 1m, 1h")
+    }
+
+	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
+	if err != nil {
+		return err
+	}
+
+	ticker := time.NewTicker(timeBetweenRequests)
+
+	for ; ; <-ticker.C {
+		err = scrapeFeeds(s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func scrapeFeeds(s *state) error {
 	ctx := context.Background()
-	feed, err := rss.FetchFeed(ctx, "https://www.wagslane.dev/index.xml")
+	nextFeed, err := s.db.GetNextFeedToFetch(ctx)
+	if err != nil {
+		return err
+	}
+	err = s.db.MarkFeedFetched(ctx, nextFeed.ID)
+	if err != nil {
+		return err
+	}
+	feed, err := rss.FetchFeed(ctx, nextFeed.Url)
 	if err != nil {
 		return err
 	}
