@@ -12,18 +12,19 @@ import (
 func main() {
 	args := os.Args
 	if len(args) < 2 {
-		fmt.Printf("Please provide the command and 1 argument")
+		fmt.Printf("Please provide the command and arguments")
 		fmt.Println("Available commands:")
 		fmt.Println(" - c: login a: name")
 		fmt.Println(" - c: register a: name")
 		fmt.Println(" - c: reset a: -")
 		fmt.Println(" - c: users a: -")
-		fmt.Println(" - c: agg a: -")
+		fmt.Println(" - c: agg a: timeframe")
 		fmt.Println(" - c: addfeed a: name url")
 		fmt.Println(" - c: feeds a: -")
 		fmt.Println(" - c: follow a: url")
 		fmt.Println(" - c: following a: -")
 		fmt.Println(" - c: unfollow a: url")
+		fmt.Println(" - c: browse a: optional Amount of Posts")
 		os.Exit(1)
 	}
 
@@ -75,6 +76,7 @@ func availableCommands() commands {
 	cs.register("follow", middlewareLoggedIn(handlerFollow))
 	cs.register("following", middlewareLoggedIn(handlerFollowing))
 	cs.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	cs.register("browse", handlerBrowse)
 	return cs
 }
 

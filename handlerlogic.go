@@ -6,6 +6,9 @@ import (
 	"time"
 	"database/sql"
 	"context"
+	"strings"
+	"log"
+	"strconv"
 	"github.com/google/uuid"
 	"github.com/Bention99/gator/internal/config"
 	"github.com/Bention99/gator/internal/database"
@@ -151,11 +154,54 @@ func scrapeFeeds(s *state) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%v", feed.Channel.Title)
-	fmt.Printf("%v", feed.Channel.Description)
+
 	for i := range feed.Channel.Item {
-		fmt.Printf("%v", feed.Channel.Item[i].Title)
-		fmt.Printf("%v", feed.Channel.Item[i].Description)
+		now := sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
+
+		var publishedAt sql.NullTime
+		if feed.Channel.Item[i].PubDate != "" {
+			t, err := time.Parse(time.RFC1123, feed.Channel.Item[i].PubDate)
+			if err != nil {
+				t, err = time.Parse(time.RFC1123Z, feed.Channel.Item[i].PubDate)
+			}
+			if err == nil {
+				publishedAt = sql.NullTime{
+					Time:  t,
+					Valid: true,
+				}
+			}
+		}
+
+		cpp := database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: now,
+			UpdatedAt: now,
+			Title: feed.Channel.Item[i].Title,
+			Url: sql.NullString{
+				String: feed.Channel.Item[i].Link,
+				Valid:  feed.Channel.Item[i].Link != "",
+			},
+			Description: sql.NullString{
+				String: feed.Channel.Item[i].Description,
+				Valid:  feed.Channel.Item[i].Description != "",
+			},
+			PublishedAt: publishedAt,
+			FeedID: nextFeed.ID,
+		}
+
+		_, err := s.db.CreatePost(ctx, cpp)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+        		continue
+			} else {
+				log.Printf("Error creating post: %v", err)
+				return err
+			}
+		}
+		fmt.Printf("Post saved: %v", feed.Channel.Item[i].Title)
 	}
 	return nil
 }
@@ -277,5 +323,28 @@ func handlerUnfollow(s *state, cmd command, currentUser database.User) error {
 		return err
 	}
 	fmt.Printf("You unfollowed: %v\n", cmd.args[0])
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command) error {
+	ctx := context.Background()
+	var limit int32 = 2
+	if len(cmd.args) > 0 {
+		parsedLimit, err := strconv.Atoi(cmd.args[0])
+		if err != nil {
+			return err
+		}
+		limit = int32(parsedLimit)
+	}
+	posts, err := s.db.GetPostsForUser(ctx, limit)
+	if err != nil {
+		return err
+	}
+	for _, post := range posts {
+		fmt.Printf("%v\n", post.Title)
+		fmt.Printf("%v\n", post.Url)
+		fmt.Printf("%v\n", post.Description)
+		fmt.Printf("%v\n", post.PublishedAt)
+	}
 	return nil
 }
